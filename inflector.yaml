@@ -5,6 +5,7 @@ swaggerUrl: openapi.yaml
 exposedSpecOptions:
   useOriginalNotParsed: true
 
+
 entityProcessors:
 - json
 - yaml
