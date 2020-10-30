@@ -103,11 +103,9 @@
                     </webApp>
                     <webAppSourceDirectory>target/${project.artifactId}-${project.version}</webAppSourceDirectory>
                     <httpConnector>
-                        <port>8888</port>
+                        <port>8080</port>
                         <idleTimeout>60000</idleTimeout>
                     </httpConnector>
-                    <stopKey>testing</stopKey>
-                    <stopPort>8888</stopPort>
                 </configuration>
             </plugin>
             <plugin>
