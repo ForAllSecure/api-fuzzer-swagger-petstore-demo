@@ -1,0 +1,37 @@
+name: Java CI
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Cache Maven packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml
+      - name: Build Docker image
+        run: docker build . --file Dockerfile --tag swagger-petstore:ci
+      - name: Download API fuzzer CLI
+        run: |
+          curl -s -Lo ./apirol https://storage.googleapis.com/downloads.spritz.fas.dev/cli/latest/linux-musl/apirol
+          chmod +x ./apirol
+          ./apirol --version
+      - name: Fuzz API
+        env:
+          APIROL_TOKEN: ${{ secrets.APIROL_TOKEN }}
+        run: |
+          docker run -t --rm -d -p 8888:8080 swagger-petstore:ci
+          sleep 5
+          ./apirol run --url http://localhost:8888/api/v3 petstore-ci 60 ./src/main/resources/openapi.yaml --junit results.xml || true
+          docker ps | grep swagger-petstore | cut -d" " -f1 | xargs docker rm -f
