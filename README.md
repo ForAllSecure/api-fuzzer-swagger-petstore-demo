@@ -1,4 +1,4 @@
-# API Fuzzer
+# ForAllSecure API Fuzzer demo
 
 The ForAllSecure API Fuzzer is used as part of the build using GitHub Actions. We have
 forked the [swagger-petstore](https://github.com/swagger-api/swagger-petstore) repository
