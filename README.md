@@ -13,6 +13,9 @@ with the status of an API Fuzzing job as it is run.
 
 For more information on the API Fuzzer, please visit us at https://spritz.fas.dev/docs.
 
+
+
+
 # Swagger Petstore Sample
 
 ## Overview
