@@ -4,8 +4,8 @@ The ForAllSecure API Fuzzer is used as part of the build using GitHub Actions. W
 forked the [swagger-petstore](https://github.com/swagger-api/swagger-petstore) repository
 which is used to showcase a REST API that implements the OpenAPI 3 Spec.
 
-As part of the build, a swagger-petstore stand-aloneserver is started so that  the `apirol`
-CLI fuzzes may fuzz the target running on localhost using the OpenAPI specification located in 
+As part of the build, a swagger-petstore stand-alone server is started so that the `apirol`
+CLI fuzzer can fuzz the target running on localhost using the OpenAPI specification located in 
 `/src/main/resources/openapi.yaml`.
 
 With the help of the API Fuzzer GitHub App, builds will automatically be updated
