@@ -33,5 +33,5 @@ jobs:
         run: |
           docker run -t --rm -d -p 8888:8080 swagger-petstore:ci
           sleep 5
-          ./apirol run --url http://localhost:8888/api/v3 petstore-ci 60 ./src/main/resources/openapi.yaml --junit results.xml || true
+          ./apirol run --url http://localhost:8888/api/v3 forallsecure/petstore-ci 60 ./src/main/resources/openapi.yaml --junit results.xml || true
           docker ps | grep swagger-petstore | cut -d" " -f1 | xargs docker rm -f
