@@ -24,7 +24,7 @@ jobs:
         run: docker build . --file Dockerfile --tag swagger-petstore:ci
       - name: Download API fuzzer CLI
         run: |
-          curl -s -Lo ./apirol https://mayhem4api.forallsecure.com/downloads/cli/latest/linux-musl/mapi
+          curl -s -Lo ./mapi https://mayhem4api.forallsecure.com/downloads/cli/latest/linux-musl/mapi
           chmod +x ./mapi
           ./mapi --version
       - name: Fuzz API
