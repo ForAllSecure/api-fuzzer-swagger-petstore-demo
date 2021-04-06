@@ -24,14 +24,14 @@ jobs:
         run: docker build . --file Dockerfile --tag swagger-petstore:ci
       - name: Download API fuzzer CLI
         run: |
-          curl -s -Lo ./apirol https://storage.googleapis.com/downloads.spritz.fas.dev/cli/latest/linux-musl/apirol
-          chmod +x ./apirol
-          ./apirol --version
+          curl -s -Lo ./apirol https://mayhem4api.forallsecure.com/downloads/cli/latest/linux-musl/mapi
+          chmod +x ./mapi
+          ./mapi --version
       - name: Fuzz API
         env:
           APIROL_TOKEN: ${{ secrets.APIROL_TOKEN }}
         run: |
           docker run -t --rm -d -p 8888:8080 swagger-petstore:ci
           sleep 5
-          ./apirol run --url http://localhost:8888/api/v3 forallsecure/petstore-ci 60 ./src/main/resources/openapi.yaml --junit results.xml || true
+          ./mapi run --url http://localhost:8888/api/v3 forallsecure/petstore-ci 60 ./src/main/resources/openapi.yaml --junit results.xml || true
           docker ps | grep swagger-petstore | cut -d" " -f1 | xargs docker rm -f
