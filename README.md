@@ -8,8 +8,8 @@ As part of the build, a swagger-petstore stand-alone server is started so that t
 CLI fuzzer can fuzz the target running on localhost using the OpenAPI specification located in 
 `/src/main/resources/openapi.yaml`.
 
-With the help of the Mayhem for API GitHub App, builds will automatically be updated
-with the status of an API Fuzzing job as it is run.
+With the help of the [Mayhem for API GitHub App](https://github.com/apps/mayhem-for-api), builds 
+will automatically be updated with the status of an API Fuzzing job as it is run.
 
 For more details please visit us at https://mayhem4api.forallsecure.com.
 
