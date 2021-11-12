@@ -1,17 +1,17 @@
-# ForAllSecure API Fuzzer demo
+# Mayhem for API GitHub Integration demo
 
-The ForAllSecure API Fuzzer is used as part of the build using GitHub Actions. We have
+Mayhem for API called part of the build using GitHub Actions. We have
 forked the [swagger-petstore](https://github.com/swagger-api/swagger-petstore) repository
 which is used to showcase a REST API that implements the OpenAPI 3 Spec.
 
-As part of the build, a swagger-petstore stand-alone server is started so that the `apirol`
+As part of the build, a swagger-petstore stand-alone server is started so that the `mapi`
 CLI fuzzer can fuzz the target running on localhost using the OpenAPI specification located in 
 `/src/main/resources/openapi.yaml`.
 
-With the help of the API Fuzzer GitHub App, builds will automatically be updated
+With the help of the Mayhem for API GitHub App, builds will automatically be updated
 with the status of an API Fuzzing job as it is run.
 
-For more information on the API Fuzzer, please visit us at https://spritz.fas.dev/docs.
+For more details please visit us at https://mayhem4api.forallsecure.com.
 
 # Swagger Petstore Sample
 
