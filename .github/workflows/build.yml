@@ -49,7 +49,7 @@ jobs:
           ./mapi --version
       - name: Fuzz API
         env:
-          APIROL_TOKEN: ${{ secrets.APIROL_TOKEN }}
+          MAPI_TOKEN: ${{ secrets.MAPI_TOKEN }}
         run: |
           docker run -t --rm -d -p 8888:8080 ${{ steps.meta.outputs.tags }}
           sleep 5
