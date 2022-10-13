@@ -14,3 +14,6 @@ swaggerProcessors:
 - io.swagger.petstore.utils.HandleAuthUrlProcessor
 
 rootPath: /api
+
+exceptionMappers:
+- io.swagger.petstore.utils.PetstoreExceptionMapper

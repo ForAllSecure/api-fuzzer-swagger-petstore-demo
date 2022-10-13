@@ -1,6 +1,10 @@
-name: Java CI
+name: Build
 
 on: [push]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build:
@@ -20,8 +24,24 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
       - name: Build with Maven
         run: mvn -B package --file pom.xml
-      - name: Build Docker image
-        run: docker build . --file Dockerfile --tag swagger-petstore:ci
+      - name: Log in to the Container registry
+        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}        
       - name: Download API fuzzer CLI
         run: |
           curl -s -Lo ./mapi https://mayhem4api.forallsecure.com/downloads/cli/latest/linux-musl/mapi
@@ -29,9 +49,9 @@ jobs:
           ./mapi --version
       - name: Fuzz API
         env:
-          APIROL_TOKEN: ${{ secrets.APIROL_TOKEN }}
+          MAPI_TOKEN: ${{ secrets.MAPI_TOKEN }}
         run: |
-          docker run -t --rm -d -p 8888:8080 swagger-petstore:ci
+          docker run -t --rm -d -p 8888:8080 ${{ steps.meta.outputs.tags }}
           sleep 5
-          ./mapi run --url http://localhost:8888/api/v3 forallsecure/petstore-ci 60 ./src/main/resources/openapi.yaml --junit results.xml || true
-          docker ps | grep swagger-petstore | cut -d" " -f1 | xargs docker rm -f
+          ./mapi run --url http://localhost:8888/api/v3 forallsecure/petstore-ci auto ./src/main/resources/openapi.yaml --junit results.xml || true
+          docker ps | grep ${{ steps.meta.outputs.tags }} | cut -d" " -f1 | xargs docker rm -f

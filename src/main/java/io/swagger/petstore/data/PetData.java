@@ -23,6 +23,7 @@ import io.swagger.petstore.model.Tag;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class PetData {
     private static List<Pet> pets = new ArrayList<>();
@@ -73,7 +74,7 @@ public class PetData {
         final List<Pet> result = new ArrayList<>();
         for (final Pet pet : pets) {
             for (final String s : statues) {
-                if (s.equals(pet.getStatus())) {
+                if (Objects.equals(s, pet.getStatus())) {
                     result.add(pet);
                 }
             }
@@ -87,7 +88,7 @@ public class PetData {
             if (null != pet.getTags()) {
                 for (final Tag tag : pet.getTags()) {
                     for (final String tagListString : tags) {
-                        if (tagListString.equals(tag.getName())) {
+                        if (Objects.equals(tagListString, tag.getName())) {
                             result.add(pet);
                         }
                     }
