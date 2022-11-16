@@ -53,5 +53,5 @@ jobs:
         run: |
           docker run -t --rm -d -p 8888:8080 ${{ steps.meta.outputs.tags }}
           sleep 5
-          ./mapi run --url http://localhost:8888/api/v3 forallsecure/petstore-ci auto ./src/main/resources/openapi.yaml --junit results.xml || true
+          ./mapi run --url http://localhost:8888/api/v3 forallsecure/petstore-ci auto ./src/main/resources/openapi.yaml --junit results.xml --sarif results.sarif || true
           docker ps | grep ${{ steps.meta.outputs.tags }} | cut -d" " -f1 | xargs docker rm -f
