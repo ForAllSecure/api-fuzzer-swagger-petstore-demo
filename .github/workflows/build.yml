@@ -50,7 +50,8 @@ jobs:
 
       - name: Fuzz API
         run: |
-          docker run -t --rm -d -p 8888:8080 ${{ steps.meta.outputs.tags }}
+          docker run -t --rm -d -p 6300:6300 -p 8888:8080 ${{ steps.meta.outputs.tags }}
+          sleep 5
 
       # Run Mayhem for API
       - name: Run Mayhem for API to check for vulnerabilities
