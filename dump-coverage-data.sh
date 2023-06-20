@@ -1,13 +1,19 @@
 #!/bin/bash
 
-# Download the JaCoCo CLI if not present
-test -f jacococli.jar || curl -o jacococli.jar https://repo1.maven.org/maven2/org/jacoco/jacoco-cli/0.8.7/jacoco-cli-0.8.7.jar
+# Delete previous report
+rm -rf report
 
-# Connect to the JaCoCo agent server and retrieve coverage data
-curl -o coverage.exec "tcp://localhost:6300/jacoco/exec?destfile=coverage.exec"
+# Delete previous coverage data
+rm -f coverage.exec
+
+# Download JaCoCo CLI  if not already present
+test -f jacococli.jar || curl -o jacococli.jar https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/0.8.6/org.jacoco.cli-0.8.6-nodeps.jar
 
 # Optionally, perform further processing on the coverage data
 # For example, generate a report using JaCoCo's command-line interface (CLI)
-java -jar jacococli.jar report coverage.exec --html report
+java -jar jacococli.jar dump --address localhost --port 6300 --destfile coverage.exec
 
+# Generate a report from the coverage data
+java -jar jacococli.jar report coverage.exec --classfiles target/classes/ --sourcefiles src/main/java --name "PetStore" --html report
 
+open report/index.html
