@@ -71,7 +71,7 @@ jobs:
           java -jar jacococli.jar dump --address localhost --port 6300 --destfile coverage.exec
 
           # Generate a report from the coverage data
-          java -jar jacococli.jar report coverage.exec --classfiles target/classes/ --sourcefiles src/main/java --name "PetStore" --html report
+          java -jar jacococli.jar report coverage.exec --classfiles target/classes/ --sourcefiles src/main/java --name "PetStore" --html report --xml coverage.xml
 
       - name: Shut down API
         run: |          
@@ -88,6 +88,6 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
-          files: coverage.exec
+          files: coverage.xml
           flags: vulnerability-tests
           name: mayhem
