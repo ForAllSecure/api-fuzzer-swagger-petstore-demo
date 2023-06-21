@@ -80,3 +80,4 @@ steps:
       codeCoverageTool: JaCoCo
       summaryFileLocation: $(Build.ArtifactStagingDirectory)/coverage.xml # string. Required. Path to summary files. 
       pathToSources: src/main/java # string. Path to Source files. 
+      reportDirectory: report/
