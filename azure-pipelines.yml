@@ -1,85 +1,82 @@
 trigger:
-  branches:
-      include:
-      - main
-
-pr: 
-  branches:
-    include:
-    - main
+  - master
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'ubuntu-latest'
 
 steps:
-- checkout: self
+  - task: Maven@3
+    inputs:
+      mavenPomFile: 'pom.xml'
+      mavenOptions: '-Xmx3072m'
+      javaHomeOption: 'JDKVersion'
+      jdkVersionOption: '1.8'
+      jdkArchitectureOption: 'x64'
+      publishJUnitResults: true
+      testResultsFiles: '**/surefire-reports/TEST-*.xml'
+      goals: 'package'
 
-# Create environment to run API
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '3.8'
-  displayName: 'Set up and use Python 3.8'
+  - task: Docker@2
+    displayName: dockerBuild
+    inputs:
+      command: build
+      Dockerfile: Dockerfile
+      arguments: -t swagger-petstore:latest
 
-- script: |
-    python -m pip install --upgrade pip
-    pip install -r requirements.txt
-  displayName: 'Install dependencies'
+  - script: |
+      docker run -t --rm -d -p 6300:6300 -p 8888:8080 swagger-petstore:latest
+      sleep 5
+    displayName: 'Run'
 
-# Run unit tests
-- script: |
-    pip install pytest pytest-azurepipelines
-    pytest
-  displayName: 'pytest'
+  # Run Mayhem for API
+  - script: |
+      curl -Lo mapi https://app.mayhem.security/cli/mapi/linux-musl/latest/mapi && chmod +x mapi
+      ./mapi run forallsecure/mapi-action-examples/petstore auto http://localhost:8888/api/v3/openapi.yaml \
+        --url 'http://localhost:8888/api/v3' \
+        --sarif $(Build.ArtifactStagingDirectory)/mapi.sarif \
+        --junit $(Build.ArtifactStagingDirectory)/junit.xml \
+        --html $(Build.ArtifactStagingDirectory)/mapi.html
+    env:
+      MAPI_TOKEN: AT1.kHFJxvKLDembnFbz6gxkGOKz_despVhA
+    continueOnError: "true"
+    displayName: Run Mayhem for API to check for vulnerabilities
 
-# Run API in test mode. We configured test mode to output stacktraces in the error responses to improve the output of Mayhem for API.
-- script: coverage run -m uvicorn src.main:app &
-  env:
-      FASTAPI_ENV: test
-  displayName: 'Start API'
+  # Requires installation of SARIF SAST Scans Tab (https://marketplace.visualstudio.com/items?itemName=sariftools.scans)
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      ArtifactName: 'CodeAnalysisLogs'
+      publishLocation: 'Container'
 
-# Run Mayhem for API
-- script: |
-    curl -Lo mapi https://mayhem4api.forallsecure.com/downloads/cli/latest/linux-musl/mapi \
-      && chmod +x mapi
-    ./mapi run forallsecure-mapi-action-examples auto http://localhost:8000/openapi.json \
-      --url 'http://localhost:8000' \
-      --sarif $(Build.ArtifactStagingDirectory)/mapi.sarif \
-      --junit $(Build.ArtifactStagingDirectory)/junit.xml \
-      --html $(Build.ArtifactStagingDirectory)/mapi.html
-  env:
-      MAPI_TOKEN: $(MAPI_TOKEN)
-  continueOnError: "true"
-  displayName: Run Mayhem for API to check for vulnerabilities
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'JUnit'
+      testResultsFiles: '$(Build.ArtifactStagingDirectory)/junit.xml'
 
-- script: pgrep coverage | xargs kill || true; sleep 1
-  condition: always()
-  displayName: 'Stop API'
+  # codecov action requires a coverage.xml file
+  - script: | 
+      # Download JaCoCo CLI  if not already present
+      test -f jacococli.jar || curl -o jacococli.jar https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/0.8.6/org.jacoco.cli-0.8.6-nodeps.jar
 
-# Requires installation of SARIF SAST Scans Tab (https://marketplace.visualstudio.com/items?itemName=sariftools.scans)
-- task: PublishBuildArtifacts@1
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'CodeAnalysisLogs'
-    publishLocation: 'Container'
+      # Dump coverage data
+      java -jar jacococli.jar dump --address localhost --port 6300 --destfile coverage.exec
 
-- task: PublishTestResults@2
-  inputs:
-    testResultsFormat: 'JUnit'
-    testResultsFiles: '$(Build.ArtifactStagingDirectory)/junit.xml'
+      # Generate a report from the coverage data
+      java -jar jacococli.jar report coverage.exec --classfiles target/classes/ --sourcefiles src/main/java --name "PetStore" --html $(Build.ArtifactStagingDirectory)/report --xml $(Build.ArtifactStagingDirectory)/coverage.xml
+    displayName: Generate coverage.xml         
 
-# codecov action requires a coverage.xml file
-- script: coverage xml -o $(Build.ArtifactStagingDirectory)/fuzz-coverage.xml
-  displayName: Generate coverage.xml
+  - script: docker ps | grep swagger-petstore:latest | cut -d" " -f1 | xargs docker rm -f
+    displayName: Shut down API
 
-# Required for PublishCodeCoverageResults
-- task: UseDotNet@2
-  inputs:
-    version: 2.1.x
+  # Required for PublishCodeCoverageResults
+  - task: UseDotNet@2
+    inputs:
+      version: 2.1.x
 
-# Publish code coverage results v2 has problems: https://github.com/microsoft/azure-pipelines-tasks/issues/17756
-# Publish any of the code coverage results from a build.
-- task: PublishCodeCoverageResults@1
-  inputs:
-    codeCoverageTool: Cobertura
-    summaryFileLocation: $(Build.ArtifactStagingDirectory)/*-coverage.xml # string. Required. Path to summary files. 
-    pathToSources: src/ # string. Path to Source files. 
+  # Publish code coverage results v2 has problems: https://github.com/microsoft/azure-pipelines-tasks/issues/17756
+  # Publish any of the code coverage results from a build.
+  - task: PublishCodeCoverageResults@1
+    inputs:
+      codeCoverageTool: JaCoCo
+      summaryFileLocation: $(Build.ArtifactStagingDirectory)/coverage.xml # string. Required. Path to summary files. 
+      pathToSources: src/main/java # string. Path to Source files. 
