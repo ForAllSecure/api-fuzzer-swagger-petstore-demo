@@ -50,7 +50,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Pet'
-        '405':
+        '400':
           description: Invalid input
       security:
         - petstore_auth:
@@ -352,7 +352,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Order'
-        '405':
+        '400':
           description: Invalid input
       requestBody:
         content:
@@ -516,7 +516,7 @@ paths:
             application/json:
               schema:
                 type: string
-        '400':
+        '401':
           description: Invalid username/password supplied
   /user/logout:
     get:
