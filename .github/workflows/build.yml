@@ -78,7 +78,7 @@ jobs:
           docker ps | grep ${{ steps.meta.outputs.tags }} | cut -d" " -f1 | xargs docker rm -f
 
       - name: Archive Mayhem for API report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: reports
           path: |
